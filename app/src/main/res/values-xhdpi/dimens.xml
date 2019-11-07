@@ -1,0 +1,4 @@
+<resources>
+	<dimen name="SplashScreen_ImageView">144dp</dimen>
+	<dimen name="SplashScreen_TextView">27sp</dimen>
+</resources>

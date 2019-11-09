@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#1c457b</color>
     <color name="colorPrimaryDark">#1c457b</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorAccent">#D6D1D1</color>
 
     <!--Toast Color Background and text Color-->
     <color name="toastBackgroundColor">@android:color/black</color>

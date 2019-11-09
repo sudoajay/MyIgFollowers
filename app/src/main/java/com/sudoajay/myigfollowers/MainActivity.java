@@ -7,10 +7,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private boolean doubleBackToExitPressedOnce;
     private SwipeRefreshLayout swipeToRefresh;
     private final String webPage = "https://myigfollowers.com/";
+    private FrameLayout frameLayout;
 
     @SuppressLint({"SetJavaScriptEnabled", "WrongConstant"})
     @Override
@@ -40,18 +43,14 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         // Run Thread For InternetConnection.
         RunThread_Internet();
 
+        frameLayout = findViewById(R.id.frameLayout);
         myWebView = findViewById(R.id.myWebView);
         swipeToRefresh = findViewById(R.id.swipeToRefresh);
         swipeToRefresh.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
         swipeToRefresh.setProgressViewOffset(true, 0, 100);
+
+
         show();
-
-
-        myWebView.setWebViewClient(new WebViewClient() {
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                myWebView.loadUrl("file:///android_asset/noInternetConnection.html");
-            }
-        });
 
         swipeToRefresh.setOnRefreshListener(this);
 
@@ -130,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                frameLayout.setVisibility(View.VISIBLE);
+
                 if (!DetectConnection.checkInternetConnection(getApplicationContext())) {
                     myWebView.reload();
                 } else {
@@ -146,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             final Uri uri = Uri.parse(url);
+
             return handleUri(uri);
         }
 
@@ -163,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             // You can use `host` or `scheme` or any part of the `uri` to decide.
             assert host != null;
             if (host.equals("myigfollowers.com")) {
-
+                frameLayout.setVisibility(View.VISIBLE);
                 // Returning false means that you are going to load this url in the webView itself
                 saveBackPage.add(uri.toString());
                 return false;
@@ -177,6 +179,14 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         }
 
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            myWebView.loadUrl("file:///android_asset/noInternetConnection.html");
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            frameLayout.setVisibility(View.GONE);
+        }
 
     }
 }

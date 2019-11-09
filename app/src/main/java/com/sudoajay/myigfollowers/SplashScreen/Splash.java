@@ -29,7 +29,7 @@ public class Splash extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
         changeStatusBarColor();
 
-        int splashTimeOut = 1500;
+        int splashTimeOut = 5000;
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

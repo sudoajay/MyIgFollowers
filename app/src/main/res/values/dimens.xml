@@ -1,4 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <dimen name="SplashScreen_TextView">20sp</dimen>
-    <dimen name="SplashScreen_ImageView">80dp</dimen>
+    <dimen name="SplashScreen_ImageView">150dp</dimen>
+    <dimen name="nothingToShow_ImageView_size">200dp</dimen>
+    <dimen name="nothingToShow_text_size">20sp</dimen>
+    <dimen name="nothingToShow_text_brief_size">14sp</dimen>
 </resources>

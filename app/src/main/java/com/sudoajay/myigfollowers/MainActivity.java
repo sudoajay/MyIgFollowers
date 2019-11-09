@@ -17,16 +17,20 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.sudoajay.myigfollowers.InternetCheck.DetectConnection;
 import com.sudoajay.myigfollowers.Toast.CustomToast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     private ArrayList<String> saveBackPage = new ArrayList<>();
     private WebView myWebView;
     private boolean doubleBackToExitPressedOnce;
+    private SwipeRefreshLayout swipeToRefresh;
+    private final String webPage = "https://myigfollowers.com/";
 
     @SuppressLint({"SetJavaScriptEnabled", "WrongConstant"})
     @Override
@@ -38,12 +42,36 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        changeStatusBarColor();
+        changeStatusBarColor(1);
 
-        String webPage = "https://myigfollowers.com/";
         saveBackPage.add(webPage);
 
+        // Run Thread For InternetConnection.
+        RunThread_Internet();
+
         myWebView = findViewById(R.id.myWebView);
+        swipeToRefresh = findViewById(R.id.swipeToRefresh);
+        swipeToRefresh.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
+        swipeToRefresh.setProgressViewOffset(true, 0, 100);
+        show();
+
+
+        myWebView.setWebViewClient(new WebViewClient() {
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                myWebView.loadUrl("file:///android_asset/noInternetConnection.html");
+                changeStatusBarColor(2);
+            }
+        });
+
+        swipeToRefresh.setOnRefreshListener(this);
+
+    }
+
+
+    @SuppressLint({"SetJavaScriptEnabled", "WrongConstant"})
+    private void show() {
+        changeStatusBarColor(1);
+
         myWebView.setPadding(0, 0, 0, 0);
         myWebView.setInitialScale(1);
         myWebView.setScrollBarStyle(33554432);
@@ -58,16 +86,18 @@ public class MainActivity extends AppCompatActivity {
         settings.setLoadWithOverviewMode(true);
         myWebView.setWebViewClient(new CustomWebViewClient());
         myWebView.loadUrl(webPage);
-
-
     }
 
 
-    private void changeStatusBarColor() {
+    private void changeStatusBarColor(int type) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.TRANSPARENT);
+            if (type == 2)
+                window.setStatusBarColor(Color.parseColor("#1c457b"));
+            else {
+                window.setStatusBarColor(Color.TRANSPARENT);
+            }
         }
     }
 
@@ -102,6 +132,42 @@ public class MainActivity extends AppCompatActivity {
         startActivity(homeIntent);
 
     }
+
+    private void RunThread_Internet() {
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                if (!DetectConnection.checkInternetConnection(getApplicationContext())) {
+                    // do something...
+                    RunThread_Internet();
+                } else {
+                    myWebView.loadUrl(webPage);
+                    changeStatusBarColor(1);
+                }
+            }
+        }, 5000); // 5 sec
+
+    }
+
+    @Override
+    public void onRefresh() {
+
+        swipeToRefresh.setRefreshing(true);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!DetectConnection.checkInternetConnection(getApplicationContext())) {
+                    changeStatusBarColor(2);
+                    myWebView.reload();
+                } else {
+                    changeStatusBarColor(1);
+                    myWebView.loadUrl(webPage);
+                }
+                swipeToRefresh.setRefreshing(false);
+            }
+        }, 2000);
+
+    }
+
     class CustomWebViewClient extends WebViewClient {
 
         @Override
@@ -124,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
             // You can use `host` or `scheme` or any part of the `uri` to decide.
             assert host != null;
             if (host.equals("myigfollowers.com")) {
+
                 // Returning false means that you are going to load this url in the webView itself
                 saveBackPage.add(uri.toString());
                 return false;
@@ -134,6 +201,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             }
+
         }
+
+
     }
 }

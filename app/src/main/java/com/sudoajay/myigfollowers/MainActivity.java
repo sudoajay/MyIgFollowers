@@ -2,21 +2,18 @@ package com.sudoajay.myigfollowers;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -34,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private SwipeRefreshLayout swipeToRefresh;
     private final String webPage = "https://myigfollowers.com/";
     private FrameLayout frameLayout;
-
+    private ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
     @SuppressLint({"SetJavaScriptEnabled", "WrongConstant"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         show();
 
         swipeToRefresh.setOnRefreshListener(this);
-
     }
 
 
@@ -119,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     // do something...
                     RunThread_Internet();
                 } else {
-                    myWebView.loadUrl(webPage);
+                    myWebView.loadUrl(saveBackPage.get(saveBackPage.size() - 1));
                 }
             }
         }, 5000); // 5 sec
@@ -134,11 +130,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             @Override
             public void run() {
                 frameLayout.setVisibility(View.VISIBLE);
-                if (!DetectConnection.checkInternetConnection(getApplicationContext())) {
-                    myWebView.reload();
-                } else {
-                    myWebView.loadUrl(webPage);
-                }
+                myWebView.loadUrl(saveBackPage.get(saveBackPage.size() - 1));
+
                 swipeToRefresh.setRefreshing(false);
             }
         }, 2000);
@@ -189,6 +182,28 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         public void onPageFinished(WebView view, String url) {
             frameLayout.setVisibility(View.GONE);
         }
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        swipeToRefresh.getViewTreeObserver().addOnScrollChangedListener(mOnScrollChangedListener =
+                new ViewTreeObserver.OnScrollChangedListener() {
+                    @Override
+                    public void onScrollChanged() {
+                        if (myWebView.getScrollY() == 0)
+                            swipeToRefresh.setEnabled(true);
+                        else
+                            swipeToRefresh.setEnabled(false);
+
+                    }
+                });
+    }
+
+    @Override
+    public void onStop() {
+        swipeToRefresh.getViewTreeObserver().removeOnScrollChangedListener(mOnScrollChangedListener);
+        super.onStop();
     }
 }

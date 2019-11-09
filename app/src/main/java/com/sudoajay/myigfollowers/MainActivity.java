@@ -2,17 +2,21 @@ package com.sudoajay.myigfollowers;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -130,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             @Override
             public void run() {
                 frameLayout.setVisibility(View.VISIBLE);
-
                 if (!DetectConnection.checkInternetConnection(getApplicationContext())) {
                     myWebView.reload();
                 } else {
@@ -182,7 +185,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             myWebView.loadUrl("file:///android_asset/noInternetConnection.html");
         }
-
         @Override
         public void onPageFinished(WebView view, String url) {
             frameLayout.setVisibility(View.GONE);
